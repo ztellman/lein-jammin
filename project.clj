@@ -1,4 +1,4 @@
-(defproject lein-jammin "0.1.0-SNAPSHOT"
+(defproject lein-jammin "0.1.0"
   :description "higher-order task that does background deadlock detection"
   :url "http://github.com/ztellman/lein-jammin"
   :license {:name "MIT License"}

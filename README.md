@@ -1,12 +1,12 @@
 ![](docs/logjammin.gif)
 
-This is a plugin which will print a formatted thread dump if your program is stuck in one place for too long.  This is especially useful in CI environments where you are not able to run `jstack` directly on the process.
+This is a plugin which modify an existing task, such that it will print a formatted thread dump if your program is stuck in one place for too long.  This is especially useful in CI environments where you are not able to run `jstack` directly on the process.
 
 ```
-lein jammin 15 test
+lein jammin <seconds> test
 ```
 
-If none of the threads in your tests are active for 15 seconds, then it will print out a series of stack traces like this, with the historically most active thread first:
+If none of the threads in your tests are active for the specified duration, then it will print out a series of stack traces like this, with the historically most active thread first:
 
 ```
  == Things seem to be stuck. ==
@@ -29,7 +29,7 @@ To use this plugin, add this to your `project.clj`:
 
 
 ```clj
-:plugins [[lein-jammin "0.1.0-SNAPSHOT"]]
+:plugins [[lein-jammin "0.1.0"]]
 ```
 
 ### license
