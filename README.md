@@ -1,6 +1,6 @@
 ![](docs/logjammin.gif)
 
-This is a plugin which modify an existing task, such that it will print a formatted thread dump if your program is stuck in one place for too long.  This is especially useful in CI environments where you are not able to run `jstack` directly on the process.
+This is a plugin which modifies an existing task, such that it will print a formatted thread dump to `*err*` if your program is stuck in one place for too long.  This is especially useful in CI environments where you are not able to run `jstack` directly on the process.
 
 ```
 lein jammin <seconds> test
