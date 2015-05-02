@@ -1,3 +1,5 @@
+![](docs/logjammin.gif)
+
 This is a plugin which will print a formatted thread dump if your program is stuck in one place for too long.  This is especially useful in CI environments where you are not able to run `jstack` directly on the process.
 
 ```
