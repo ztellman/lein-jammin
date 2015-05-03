@@ -39,9 +39,15 @@
          .findDeadlockedThreads
          seq))
 
+     (defn terminated? [id]
+       (= Thread$State/TERMINATED
+         (->> id
+           (.getThreadInfo thread-bean)
+           .getThreadState)))
+
      (defn thread-info [id]
        (let []
-         (let [info (.getThreadInfo thread-bean id 10000)]
+         (when-let [info (.getThreadInfo thread-bean id 10000)]
            {:stack-trace (reverse (.getStackTrace info))
             :user-time (.getThreadUserTime thread-bean id)
             :blocked-time (.getBlockedTime info)
@@ -61,8 +67,11 @@
            (apply str))))
 
      (defn pprint-all-threads []
-       (let [stack->infos (->> (thread-ids)
+       (let [id (.getId (Thread/currentThread))
+             stack->infos (->> (thread-ids)
+                            (remove #{id})
                             (map thread-info)
+                            (remove nil?)
                             (group-by :stack-trace)
                             (sort-by (fn [[stack infos]]
                                        (->> infos (map :user-time) (apply max))))
@@ -70,6 +79,12 @@
          (.write *out*
            (with-out-str
              (println "\n == Things seem to be stuck. ==")
+
+             (when-let [deadlocked (deadlocked-thread-ids)]
+               (println "These threads appear to be deadlocked:")
+               (doseq [t deadlocked]
+                 (->> t thread-info :name (println "  "))))
+
              (doseq [[stack infos] stack->infos]
                (print "\n\n")
                (doseq [name (map :name infos)]
@@ -85,7 +100,11 @@
                 (fn []
                   (Thread/sleep 100)
                   (let [ids (remove #{id} (thread-ids))]
-                    (zipmap ids (->> ids (map thread-info) (map :stack-trace))))))
+                    (zipmap
+                      ids
+                      (->> ids
+                        (map thread-info)
+                        (map :stack-trace))))))
            (partition (Math/ceil (/ duration 100)))
            (filter #(apply = %))
            first)
@@ -102,12 +121,17 @@
         (eip
           project
           `(do
-             (future
-               (try
-                 (leiningen.jammin/wait-for-hang (* 1000 ~seconds))
-                 (catch Throwable e#
-                   (.printStackTrace e#)))
-               (leiningen.jammin/pprint-all-threads))
+             (doto
+               (Thread.
+                 (fn []
+                   (try
+                     (leiningen.jammin/wait-for-hang (* 1000 ~seconds))
+                     (catch Throwable e#
+                       (.printStackTrace e#)))
+                   (leiningen.jammin/pprint-all-threads)))
+               (.setName "lein-jammin-monitor")
+               (.setDaemon true)
+               .start)
              ~form)
           `(do
              ~load-forms
