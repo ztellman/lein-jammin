@@ -29,7 +29,7 @@ To use this plugin, add this to your `project.clj`:
 
 
 ```clj
-:plugins [[lein-jammin "0.1.0"]]
+:plugins [[lein-jammin "0.1.1"]]
 ```
 
 ### license
